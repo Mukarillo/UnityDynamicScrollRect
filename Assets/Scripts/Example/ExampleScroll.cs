@@ -13,8 +13,8 @@ namespace example
 		public GameObject referenceObject;
 
 		private ExampleData[] mData;
-		private AssukarDynamicScroll<ExampleData, ExampleDynamicObject> mVerticalDynamicScroll = new AssukarDynamicScroll<ExampleData, ExampleDynamicObject>();
-		private AssukarDynamicScroll<ExampleData, ExampleDynamicObject> mHorizontalDynamicScroll = new AssukarDynamicScroll<ExampleData, ExampleDynamicObject>();
+		private DynamicScroll<ExampleData, ExampleDynamicObject> mVerticalDynamicScroll = new DynamicScroll<ExampleData, ExampleDynamicObject>();
+		private DynamicScroll<ExampleData, ExampleDynamicObject> mHorizontalDynamicScroll = new DynamicScroll<ExampleData, ExampleDynamicObject>();
 
 		public IEnumerator Start()
 		{

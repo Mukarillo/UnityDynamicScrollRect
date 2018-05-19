@@ -6,7 +6,7 @@ using pooling;
 
 namespace dynamicscroll
 {
-    public class AssukarDynamicScroll<T, T1> 
+    public class DynamicScroll<T, T1> 
         where T : class
         where T1 : DynamicScrollObject<T>
     {
