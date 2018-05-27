@@ -10,7 +10,7 @@ namespace dynamicscroll
         where T : class
         where T1 : DynamicScrollObject<T>
     {
-        //public const float CONTENT_OFFSET_FIXER_LIMIT = 5000;
+        public const float CONTENT_OFFSET_FIXER_LIMIT = 1000f;
         public float spacing = 15f;
         public readonly Pooling<T1> objectPool = new Pooling<T1>();
         public Action<Vector2> OnDragEvent;
@@ -198,32 +198,35 @@ namespace dynamicscroll
 			if(OnDragEvent != null)
                 OnDragEvent.Invoke(mScrollRect.velocity);
 			
-            //fix scroll velocity after offset
-            //if (mIsVertical && Mathf.Abs(mScrollRect.content.anchoredPosition.y) > CONTENT_OFFSET_FIXER_LIMIT)
-            //{
-            //    var vel = mScrollRect.velocity;
-            //    var v = (mScrollRect.content.anchoredPosition.y > 0 ? -CONTENT_OFFSET_FIXER_LIMIT : CONTENT_OFFSET_FIXER_LIMIT);
-            //    mScrollRect.content.anchoredPosition = new Vector2(mScrollRect.content.anchoredPosition.x, mScrollRect.content.anchoredPosition.y + v);
-            //    objectPool.GetAllWithState(true).ForEach(x =>
-            //    {
-            //        var r = x.GetComponent<RectTransform>();
-            //        r.anchoredPosition = new Vector2(r.anchoredPosition.x, r.anchoredPosition.y - v);
-            //    });
-            //    mScrollRect.velocity = vel;
-            //}
+			if (mIsVertical && Mathf.Abs(mScrollRect.content.anchoredPosition.y) > CONTENT_OFFSET_FIXER_LIMIT)
+            {
+                var v = (mScrollRect.content.anchoredPosition.y > 0 ? -CONTENT_OFFSET_FIXER_LIMIT : CONTENT_OFFSET_FIXER_LIMIT);
+                mScrollRect.content.anchoredPosition = new Vector2(mScrollRect.content.anchoredPosition.x, mScrollRect.content.anchoredPosition.y + v);
+                RectTransform objRectTransform;
+                Vector2 objAnchoredPos;
+                objectPool.GetAllWithState(true).ForEach(x =>
+                {
+                    objRectTransform = x.GetComponent<RectTransform>();
+                    objAnchoredPos.x = objRectTransform.anchoredPosition.x;
+                    objAnchoredPos.y = objRectTransform.anchoredPosition.y - v;
+                    objRectTransform.anchoredPosition = objAnchoredPos;
+                });
+            }
 
-            //if (mIsHorizontal && Mathf.Abs(mScrollRect.content.anchoredPosition.x) > CONTENT_OFFSET_FIXER_LIMIT)
-            //{
-            //    var vel = mScrollRect.velocity;
-            //    var v = (mScrollRect.content.anchoredPosition.x > 0 ? -CONTENT_OFFSET_FIXER_LIMIT : CONTENT_OFFSET_FIXER_LIMIT);
-            //    mScrollRect.content.anchoredPosition = new Vector2(mScrollRect.content.anchoredPosition.x + v, mScrollRect.content.anchoredPosition.y);
-            //    objectPool.GetAllWithState(true).ForEach(x =>
-            //    {
-            //        var r = x.GetComponent<RectTransform>();
-            //        r.anchoredPosition = new Vector2(r.anchoredPosition.x - v, r.anchoredPosition.y);
-            //    });
-            //    mScrollRect.velocity = vel;
-            //}
+            if (mIsHorizontal && Mathf.Abs(mScrollRect.content.anchoredPosition.x) > CONTENT_OFFSET_FIXER_LIMIT)
+            {
+                var v = (mScrollRect.content.anchoredPosition.x > 0 ? -CONTENT_OFFSET_FIXER_LIMIT : CONTENT_OFFSET_FIXER_LIMIT);
+                mScrollRect.content.anchoredPosition = new Vector2(mScrollRect.content.anchoredPosition.x + v, mScrollRect.content.anchoredPosition.y);
+                RectTransform objRectTransform;
+                Vector2 objAnchoredPos;
+                objectPool.GetAllWithState(true).ForEach(x =>
+                {
+                    objRectTransform = x.GetComponent<RectTransform>();
+                    objAnchoredPos.x = objRectTransform.anchoredPosition.x - v;
+                    objAnchoredPos.y = objRectTransform.anchoredPosition.y;
+                    objRectTransform.anchoredPosition = objAnchoredPos;
+                });
+            }
 
             for (var i = 0; i < objectPool.Count; i++)
             {
