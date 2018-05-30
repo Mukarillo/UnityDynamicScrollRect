@@ -41,7 +41,6 @@ namespace dynamicscroll
             mInitialAmount = initialAmount;
 
             mInfoList = infoList;
-            var currentIndex = startIndex;
             
             mScrollRect.onValueChanged.AddListener(OnScroll);
             mScrollRect.movementType = ScrollRect.MovementType.Unrestricted;
@@ -73,40 +72,22 @@ namespace dynamicscroll
             objectPool.createMoreIfNeeded = createMoreIfNeeded;
 			objectPool.Initialize(Mathf.Min(initialAmount, infoList.Length), objReference, mScrollRect.content);
 
-            float totalSize = 0f;
-			int toCreate = Mathf.Min(initialAmount, infoList.Length);
-			var lastObjectPosition = Vector2.zero;
-            for (var i = 0; i < toCreate; i++)
-            {
-                var obj = objectPool.Collect();
-                obj.updateScrollObject(mInfoList[currentIndex + i], currentIndex + i);            
-                var rect = obj.GetComponent<RectTransform>();
-                var posX = i > 0 ? lastObjectPosition.x + (mIsHorizontal ? + spacing : 0) : 0;
-                var posY = i > 0 ? lastObjectPosition.y - (mIsVertical ? spacing : 0) : 0;
-                rect.anchoredPosition = new Vector2(posX, posY);
-                lastObjectPosition = new Vector2(posX + (mIsHorizontal ? obj.currentWidth : 0), posY - (mIsVertical ? obj.currentHeight : 0));
-
-                totalSize += (mIsVertical) ? obj.currentHeight : obj.currentWidth;
-            }
-
-			totalSize = (totalSize / (float) toCreate) * infoList.Length;
-            bool canDrag = (mIsHorizontal && totalSize > mScrollRect.content.rect.width) || (mIsVertical && totalSize > mScrollRect.content.rect.height);
-            ToggleScroll(canDrag);
-
+			CreateList(mInfoList, startIndex);
+            
 			DisableGridComponents();
 
             objectPool.ForEach(x => x.SetRefreshListAction(RefreshPosition));
 
             if (!mIsHorizontal || !mIsVertical) return;
-            Debug.LogError("AssukarSynamicScroll doesn't support scrolling in both directions, please choose one direction (horizontal or vertical)");
+            Debug.LogError("DynamicScroll doesn't support scrolling in both directions, please choose one direction (horizontal or vertical)");
             mIsHorizontal = false;
         }
 
-        //if startPos = -1, it will keep the same position
-        public void ChangeList(T[] infoList, int startPos = -1, bool resetContentPosition = false)
+        //if startIndex = -1, it will keep the same position
+		public void ChangeList(T[] infoList, int startIndex = -1, bool resetContentPosition = false)
         {
-            if (startPos == -1)
-                startPos = GetHighest().currentIndex;
+            if (startIndex == -1)
+                startIndex = GetHighest().currentIndex;
 
             mScrollRect.StopMovement();
 			mScrollRect.content.anchoredPosition = Vector2.zero;
@@ -115,17 +96,23 @@ namespace dynamicscroll
             objs.ForEach(x => objectPool.Release(x));
             if(resetContentPosition)
                 mScrollRect.content.anchoredPosition = new Vector2((mIsHorizontal ? spacing : 0), (mIsVertical ? spacing : 0));
+            
+            mInfoList = infoList;
 
-            var totalSize = 0f;
-			var toCreate = Mathf.Min(mInitialAmount, infoList.Length);
-			var lastObjectPosition = Vector2.zero;
+			CreateList(infoList, startIndex);
+        }
+
+        private void CreateList(T[] infoList, int startIndex)
+		{
+			float totalSize = 0f;
+			int toCreate = Mathf.Min(mInitialAmount, infoList.Length);
+            var lastObjectPosition = Vector2.zero;
             for (var i = 0; i < toCreate; i++)
             {
                 var obj = objectPool.Collect();
-                obj.updateScrollObject(infoList[startPos + i], startPos + i);
-                
+				obj.updateScrollObject(mInfoList[startIndex + i], startIndex + i);
                 var rect = obj.GetComponent<RectTransform>();
-                var posX = i > 0 ? lastObjectPosition.x + (mIsHorizontal ? + spacing : 0) : 0;
+                var posX = i > 0 ? lastObjectPosition.x + (mIsHorizontal ? +spacing : 0) : 0;
                 var posY = i > 0 ? lastObjectPosition.y - (mIsVertical ? spacing : 0) : 0;
                 rect.anchoredPosition = new Vector2(posX, posY);
                 lastObjectPosition = new Vector2(posX + (mIsHorizontal ? obj.currentWidth : 0), posY - (mIsVertical ? obj.currentHeight : 0));
@@ -133,19 +120,17 @@ namespace dynamicscroll
                 totalSize += (mIsVertical) ? obj.currentHeight : obj.currentWidth;
             }
 
-			totalSize = (totalSize / (float)toCreate) * infoList.Length;
-            bool canDrag = (mIsHorizontal && totalSize > mScrollRect.viewport.rect.width) || (mIsVertical && totalSize > mScrollRect.viewport.rect.height);
-
+            totalSize = (totalSize / (float)toCreate) * infoList.Length;
+            bool canDrag = (mIsHorizontal && totalSize > mScrollRect.content.rect.width) || (mIsVertical && totalSize > mScrollRect.content.rect.height);
             ToggleScroll(canDrag);
-
-            mInfoList = infoList;
-        }
+		}
 
         public void RefreshPosition()
         {
             var lastObject = GetHighest();
             var objs = objectPool.GetAllWithState(true);
             var index = lastObject.currentIndex;
+			float totalSize = 0f;
 
             for (var i = 0; i < objs.Count; i++)
             {
@@ -157,12 +142,15 @@ namespace dynamicscroll
                     var x = (mIsHorizontal ? lo.anchoredPosition.x + lastObject.currentWidth + spacing : no.anchoredPosition.x);
                     var y = (mIsVertical ? lo.anchoredPosition.y - lastObject.currentHeight - spacing : no.anchoredPosition.y);
                     no.anchoredPosition = new Vector2(x, y);
-
+					totalSize += mIsHorizontal ? lastObject.currentWidth : lastObject.currentHeight;
                     lastObject = currentObject;
                 }
 
                 index++;
             }
+
+            bool canDrag = (mIsHorizontal && totalSize > mScrollRect.viewport.rect.width) || (mIsVertical && totalSize > mScrollRect.viewport.rect.height);
+			ToggleScroll(canDrag);
         }
 
         public void ToggleScroll(bool active)
