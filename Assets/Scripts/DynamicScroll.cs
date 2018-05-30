@@ -109,6 +109,8 @@ namespace dynamicscroll
             var lastObjectPosition = Vector2.zero;
             for (var i = 0; i < toCreate; i++)
             {
+				if (startIndex + i >= infoList.Length)
+					break;
                 var obj = objectPool.Collect();
 				obj.updateScrollObject(mInfoList[startIndex + i], startIndex + i);
                 var rect = obj.GetComponent<RectTransform>();
