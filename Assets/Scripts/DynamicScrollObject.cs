@@ -9,8 +9,8 @@ namespace dynamicscroll
         protected Action mRefreshListAction;
 
         public virtual void reset() { }
-        public abstract float currentHeight { get; set; }
-        public abstract float currentWidth { get; set; }
+        public virtual float currentHeight { get; set; }
+        public virtual float currentWidth { get; set; }
         public virtual int currentIndex { get; set; }
 
 		public virtual void updateScrollObject(T item, int index)

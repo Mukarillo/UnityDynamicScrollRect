@@ -6,8 +6,13 @@ namespace example
 {
 	public class ExampleDynamicObject : DynamicScrollObject<ExampleData>
 	{
-		public override float currentHeight { get; set; }
-		public override float currentWidth { get; set; }
+		public override string objectName
+		{
+			get
+			{
+				return "ExampleObject";
+			}
+		}
 
 		private Text idText;
 		private Text nameEmailText;

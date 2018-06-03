@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using pooling;
+using System.Collections;
 
 namespace dynamicscroll
 {
@@ -25,6 +26,8 @@ namespace dynamicscroll
         private bool mIsHorizontal = false;
             
         private Vector2 mNewAnchoredPosition = Vector2.zero;
+		private Vector2 mScrollVelocity = Vector2.zero;
+		private Vector2 mLastPos = Vector2.zero;
 		private T[] mInfoList;
 
         private int mInitialAmount;
@@ -185,16 +188,111 @@ namespace dynamicscroll
 
         private void OnScroll(Vector2 pos)
         {
+			mScrollVelocity = mScrollRect.content.anchoredPosition - mLastPos;
+            mLastPos = mScrollRect.content.anchoredPosition;
+            
+			if (LimitScroll()) return;
+
 			if(OnDragEvent != null)
-                OnDragEvent.Invoke(mScrollRect.velocity);
-			
+                OnDragEvent.Invoke(mScrollVelocity);
+
+			//TODO: fix offset
+			//ApplyOffsetIfNeeded();         
+
+			var lowestObj = GetLowest();
+			var lowestRect = lowestObj.GetComponent<RectTransform>();
+			var highestObj = GetHighest();
+			var highestRect = highestObj.GetComponent<RectTransform>();
+
+			if(mIsHorizontal)
+			{
+				if(mScrollVelocity.x > 0)
+				{
+					var objPosX = highestRect.anchoredPosition.x + mScrollRect.content.anchoredPosition.x;
+					if(objPosX > mScrollRect.content.rect.width + highestObj.currentWidth * 0.1f)
+					{
+						var nextIndex = lowestObj.currentIndex - 1;
+						if (nextIndex < 0) return;
+						objectPool.Release(highestObj);
+						var obj = objectPool.Collect();
+						obj.updateScrollObject(mInfoList[nextIndex], nextIndex);
+                        obj.transform.SetAsFirstSibling();
+
+						mNewAnchoredPosition = lowestRect.anchoredPosition;
+						mNewAnchoredPosition.x += -lowestObj.currentWidth - spacing;
+
+						obj.GetComponent<RectTransform>().anchoredPosition = mNewAnchoredPosition;
+					}
+				}
+				else if(mScrollVelocity.x < 0)
+				{
+					var objPosX = lowestRect.anchoredPosition.x + mScrollRect.content.anchoredPosition.x;
+					if(objPosX < lowestObj.currentWidth * -1.1f)
+					{
+						var nextIndex = highestObj.currentIndex + 1;
+						if (nextIndex >= mInfoList.Length) return;
+						objectPool.Release(lowestObj);                  
+                        var obj = objectPool.Collect();
+                        obj.updateScrollObject(mInfoList[nextIndex], nextIndex);
+                        obj.transform.SetAsFirstSibling();
+
+						mNewAnchoredPosition = highestRect.anchoredPosition;
+						mNewAnchoredPosition.x += obj.currentWidth + spacing;
+
+						obj.GetComponent<RectTransform>().anchoredPosition = mNewAnchoredPosition;
+					}
+				}
+			}
+			else if(mIsVertical)
+			{
+			    if (mScrollVelocity.y > 0)
+                {
+					var objPosY = highestRect.anchoredPosition.y + mScrollRect.content.anchoredPosition.y;
+					if(objPosY - highestObj.currentHeight > highestObj.currentHeight * 0.1f)
+					{
+						var nextIndex = lowestObj.currentIndex + 1;
+						if (nextIndex >= mInfoList.Length) return;
+						objectPool.Release(highestObj);
+                        var obj = objectPool.Collect();
+						obj.updateScrollObject(mInfoList[nextIndex], nextIndex);
+                        obj.transform.SetAsLastSibling();
+
+						mNewAnchoredPosition = lowestRect.anchoredPosition;
+						mNewAnchoredPosition.y += -lowestObj.currentHeight - spacing;
+
+                        obj.GetComponent<RectTransform>().anchoredPosition = mNewAnchoredPosition;
+					}
+                }
+                else if (mScrollVelocity.y < 0)
+                {
+					var objPosY = lowestRect.anchoredPosition.y + mScrollRect.content.anchoredPosition.y;
+					if(objPosY < -(mScrollRect.content.rect.height + lowestObj.currentHeight * 0.1f))
+					{
+						var nextIndex = highestObj.currentIndex - 1;
+						if (nextIndex < 0) return;
+						objectPool.Release(lowestObj);                  
+                        var obj = objectPool.Collect();
+                        obj.updateScrollObject(mInfoList[nextIndex], nextIndex);
+                        obj.transform.SetAsFirstSibling();
+
+						mNewAnchoredPosition = highestRect.anchoredPosition;
+						mNewAnchoredPosition.y += obj.currentHeight + spacing;
+                                                      
+                        obj.GetComponent<RectTransform>().anchoredPosition = mNewAnchoredPosition;
+					}
+                }
+			}
+        }
+
+		private void ApplyOffsetIfNeeded()
+		{         
 			if (mIsVertical && Mathf.Abs(mScrollRect.content.anchoredPosition.y) > CONTENT_OFFSET_FIXER_LIMIT)
             {
                 var v = (mScrollRect.content.anchoredPosition.y > 0 ? -CONTENT_OFFSET_FIXER_LIMIT : CONTENT_OFFSET_FIXER_LIMIT);
                 mScrollRect.content.anchoredPosition = new Vector2(mScrollRect.content.anchoredPosition.x, mScrollRect.content.anchoredPosition.y + v);
                 RectTransform objRectTransform;
                 Vector2 objAnchoredPos;
-                objectPool.GetAllWithState(true).ForEach(x =>
+                objectPool.ForEach(x =>
                 {
                     objRectTransform = x.GetComponent<RectTransform>();
                     objAnchoredPos.x = objRectTransform.anchoredPosition.x;
@@ -209,7 +307,7 @@ namespace dynamicscroll
                 mScrollRect.content.anchoredPosition = new Vector2(mScrollRect.content.anchoredPosition.x + v, mScrollRect.content.anchoredPosition.y);
                 RectTransform objRectTransform;
                 Vector2 objAnchoredPos;
-                objectPool.GetAllWithState(true).ForEach(x =>
+                objectPool.ForEach(x =>
                 {
                     objRectTransform = x.GetComponent<RectTransform>();
                     objAnchoredPos.x = objRectTransform.anchoredPosition.x - v;
@@ -217,233 +315,112 @@ namespace dynamicscroll
                     objRectTransform.anchoredPosition = objAnchoredPos;
                 });
             }
+		}
 
-            for (var i = 0; i < objectPool.Count; i++)
-            {
-				if(!objectPool[i].isUsing) continue;
-
-                var rectTransform = objectPool[i].GetComponent<RectTransform>();
-                
-                if (mIsHorizontal)
-                {
-                    var objPosX = rectTransform.anchoredPosition.x + mScrollRect.content.anchoredPosition.x;
-
-					if (mScrollRect.velocity.x > 0 && objPosX > mScrollRect.content.rect.width + objectPool[i].currentWidth * 0.1f)
-                    {
-                        var lowestObj = GetLowest();
-                        var nextIndex = lowestObj.currentIndex - 1;
-
-						if (nextIndex < 0)
-                            continue;
-
-                        objectPool.Release(objectPool[i]);
-
-						mNewAnchoredPosition = rectTransform.anchoredPosition;
-
-                        var obj = objectPool.Collect();
-                        obj.updateScrollObject(mInfoList[nextIndex], nextIndex);
-                        obj.transform.SetAsFirstSibling();
-                        
-                        mNewAnchoredPosition.x = lowestObj.GetComponent<RectTransform>().anchoredPosition.x - lowestObj.currentWidth - spacing;
-						rectTransform.anchoredPosition = mNewAnchoredPosition;
-                    }
-					else if (mScrollRect.velocity.x < 0 && objPosX < objectPool[i].currentWidth * -1.1f)
-                    {
-                        var highestObject = GetHighest();
-                        var nextIndex = highestObject.currentIndex + 1;
-
-						if (nextIndex >= mInfoList.Length)
-                            continue;
-
-                        objectPool.Release(objectPool[i]);
-						mNewAnchoredPosition = rectTransform.anchoredPosition;
-
-                        var obj = objectPool.Collect();
-                        obj.updateScrollObject(mInfoList[nextIndex], nextIndex);
-                        obj.transform.SetAsFirstSibling();
-                        
-                        mNewAnchoredPosition.x = highestObject.GetComponent<RectTransform>().anchoredPosition.x + obj.currentWidth + spacing;                  
-						rectTransform.anchoredPosition = mNewAnchoredPosition;
-                    }
-                }
-
-                if (mIsVertical)
-                {
-                    var objPosY = rectTransform.anchoredPosition.y + mScrollRect.content.anchoredPosition.y;
-
-                    if (mScrollRect.velocity.y > 0 && objPosY - objectPool[i].currentHeight > objectPool[i].currentHeight * 0.1f)
-                    {
-                        var lowestObj = GetLowest();
-                        var nextIndex = lowestObj.currentIndex + 1;
-
-						if (nextIndex >= mInfoList.Length)
-                            continue;
-                  
-                        objectPool.Release(objectPool[i]);
-
-						mNewAnchoredPosition = rectTransform.anchoredPosition;
-
-                        var obj = objectPool.Collect();
-                        obj.updateScrollObject(mInfoList[nextIndex], nextIndex);
-                        obj.transform.SetAsFirstSibling();
-                        
-                        mNewAnchoredPosition.y = lowestObj.GetComponent<RectTransform>().anchoredPosition.y - lowestObj.currentHeight - spacing;
-                        obj.GetComponent<RectTransform>().anchoredPosition = mNewAnchoredPosition;
-                    }
-					else if (mScrollRect.velocity.y < 0 && objPosY < -(mScrollRect.content.rect.height + objectPool[i].currentHeight * 0.1f))
-                    {
-                        var highestObject = GetHighest();
-                        var nextIndex = highestObject.currentIndex - 1;
-
-                        if (nextIndex < 0)
-                            continue;
-                  
-                        objectPool.Release(objectPool[i]);
-
-						mNewAnchoredPosition = rectTransform.anchoredPosition;
-
-                        var obj = objectPool.Collect();
-                        obj.updateScrollObject(mInfoList[nextIndex], nextIndex);
-                        obj.transform.SetAsFirstSibling();
-                        
-                        mNewAnchoredPosition.y = highestObject.GetComponent<RectTransform>().anchoredPosition.y + obj.currentHeight + spacing;
-                        obj.GetComponent<RectTransform>().anchoredPosition = mNewAnchoredPosition;
-                    }
-                }
-            }
-            
-            LimitScroll();
-        }
-
-        private void LimitScroll()
+		private bool LimitScroll()
         {
+			var lowestObj = GetLowest();
+			var lowestPos = lowestObj.GetComponent<RectTransform>().anchoredPosition;
+            var highestObj = GetHighest();
+			var highestPos = highestObj.GetComponent<RectTransform>().anchoredPosition;
+			var contentPos = mScrollRect.content.anchoredPosition;
+
             if (mIsVertical)
             {
-                if (mScrollRect.velocity.y < 0)
-                {
-                    //Going Down
-                    var obj = GetHighest();
-                    var objRect = obj.GetComponent<RectTransform>().anchoredPosition;
-                    var objPosY = mScrollRect.content.anchoredPosition.y + objRect.y + spacing + mScrollRect.viewport.rect.height;
-                    var diff = 0f;
-                    var limit = mScrollRect.viewport.rect.height - spacing;
+				if (highestObj.currentIndex == 0)
+				{
+					//Going Down
+					var limit = mScrollRect.content.rect.height;
+					var objPosY = contentPos.y + highestPos.y + spacing + limit;
 
-                    if (objPosY < limit)
-                    {
-                        diff = limit - objPosY;
-                        mScrollRect.StopMovement();
-                    }
-
-                    mScrollRect.content.anchoredPosition = new Vector2(mScrollRect.content.anchoredPosition.x, mScrollRect.content.anchoredPosition.y + diff);
-                }
-                else if(mScrollRect.velocity.y > 0)
+					if (objPosY < limit)
+					{
+						mScrollRect.StopMovement();                  
+						mScrollRect.content.anchoredPosition = new Vector2(contentPos.x, contentPos.y + limit - objPosY);
+						return true;
+					}
+				}
+				else if (lowestObj.currentIndex == mInfoList.Length - 1)
                 {
                     //Going Up
-                    var obj = GetLowest();
-                    var objRect = obj.GetComponent<RectTransform>().anchoredPosition;
-                    var objPosY = mScrollRect.content.anchoredPosition.y + objRect.y + mScrollRect.viewport.rect.height - spacing;
-                    var limit = obj.currentHeight + spacing;
-                    var diff = 0f;
+					var objPosY = contentPos.y + lowestPos.y + mScrollRect.content.rect.height - spacing;
+					var limit = lowestObj.currentHeight;
 
                     if (objPosY > limit)
                     {
-                        diff = limit - objPosY;
-                        mScrollRect.StopMovement();
-                    }
-
-                    mScrollRect.content.anchoredPosition = new Vector2(mScrollRect.content.anchoredPosition.x, mScrollRect.content.anchoredPosition.y + diff);
+                        mScrollRect.StopMovement();                  
+						mScrollRect.content.anchoredPosition = new Vector2(contentPos.x, contentPos.y + limit - objPosY);
+                        return true;
+                    }               
                 }
             }
             else if (mIsHorizontal)
             {
-                if (mScrollRect.velocity.x < 0)
+				if (highestObj.currentIndex == mInfoList.Length - 1)
                 {
                     //Going Left
-                    var obj = GetHighest();
-                    var objRect = obj.GetComponent<RectTransform>().anchoredPosition;
-                    var objPosX = mScrollRect.content.anchoredPosition.x + objRect.x + spacing + mScrollRect.viewport.rect.width;
-                    var diff = 0f;
-                    var limit = mScrollRect.viewport.rect.width - spacing;
+					var objPosX = mScrollRect.content.anchoredPosition.x + highestPos.x + spacing + mScrollRect.content.rect.width;
+					var limit = mScrollRect.content.rect.width;
 
                     if (objPosX < limit)
                     {
-                        diff = limit - objPosX;
                         mScrollRect.StopMovement();
+						mScrollRect.content.anchoredPosition = new Vector2(contentPos.x + limit - objPosX, contentPos.y);
+                        return true;
                     }
-
-                    mScrollRect.content.anchoredPosition = new Vector2(mScrollRect.content.anchoredPosition.x + diff, mScrollRect.content.anchoredPosition.y);
                 }
-                else if (mScrollRect.velocity.x > 0)
+				else if (lowestObj.currentIndex == 0)
                 {
                     //Going Right
-                    var obj = GetLowest();
-                    var objRect = obj.GetComponent<RectTransform>().anchoredPosition;
-                    var objPosX = mScrollRect.content.anchoredPosition.x + objRect.x + mScrollRect.viewport.rect.width - spacing;
-                    var limit = obj.currentWidth + spacing;
-                    var diff = 0f;
+					var objPosX = mScrollRect.content.anchoredPosition.x + lowestPos.x + mScrollRect.content.rect.width - spacing;
+					var limit = lowestObj.currentWidth;
 
                     if (objPosX > limit)
                     {
-                        diff = limit - objPosX;
                         mScrollRect.StopMovement();
-                    }
-
-                    mScrollRect.content.anchoredPosition = new Vector2(mScrollRect.content.anchoredPosition.x + diff, mScrollRect.content.anchoredPosition.y);
+						mScrollRect.content.anchoredPosition = new Vector2(contentPos.x + limit - objPosX, contentPos.y);
+                        return true;
+                    }               
                 }
             }
+            
+			return false;
         }
 
-        private T1 GetLowest()
+        public T1 GetLowest()
         {
             var min = float.MaxValue;
             T1 lowestObj = null;
-            var objs = objectPool.GetAllWithState(true);
-            foreach (var t in objs)
+            var objs = objectPool;
+
+			foreach (var t in objs)
             {
-                if (mIsVertical)
+				var rectTransform = t.GetComponent<RectTransform>().anchoredPosition;
+                
+                if (mIsVertical && rectTransform.y < min || mIsHorizontal && rectTransform.x < min)
                 {
-                    if (t.transform.localPosition.y < min)
-                    {
-                        min = t.transform.localPosition.y;
-                        lowestObj = t;
-                    }
-                }
-                else if (mIsHorizontal)
-                {
-                    if (t.transform.localPosition.x < min)
-                    {
-                        min = t.transform.localPosition.x;
-                        lowestObj = t;
-                    }
+                    min = mIsVertical ? rectTransform.y : rectTransform.x;
+					lowestObj = t;
                 }
             }
 
             return lowestObj;
         }
 
-        private T1 GetHighest()
+        public T1 GetHighest()
         {
             var max = float.MinValue;
             T1 highestObj = null;
-            var objs = objectPool.GetAllWithState(true);
+            var objs = objectPool;
             foreach (var t in objs)
             {
-                if (mIsVertical)
-                {
-                    if (t.transform.localPosition.y > max)
-                    {
-                        max = t.transform.localPosition.y;
-                        highestObj = t;
-                    }
-                }
-                else if (mIsHorizontal)
-                {
-                    if (t.transform.localPosition.x > max)
-                    {
-                        max = t.transform.localPosition.x;
-                        highestObj = t;
-                    }
-                }
+				var rectTransform = t.GetComponent<RectTransform>().anchoredPosition;
+
+				if(mIsVertical && rectTransform.y > max || mIsHorizontal && rectTransform.x > max)
+				{
+					max = mIsVertical ? rectTransform.y : rectTransform.x;
+					highestObj = t;
+				}
             }
 
             return highestObj;

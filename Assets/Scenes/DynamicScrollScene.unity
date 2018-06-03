@@ -134,7 +134,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 30925669}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 64, y: -33.630005, z: 0}
+  m_LocalPosition: {x: 166, y: -87.1725, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1856831219}
@@ -172,8 +172,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a4d2141341c9488db266266a5d214c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  verticalScroll: {fileID: 1974820038}
-  horizontalScroll: {fileID: 1040084273}
+  verticalScroll: {fileID: 0}
+  horizontalScroll: {fileID: 0}
   referenceObject: {fileID: 1071413000746652, guid: 3a80a1cdcf7fa4d5f94d375a5ea195de,
     type: 2}
 --- !u!4 &477066751
@@ -214,7 +214,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 513201911}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -64, y: 79.229996, z: 0}
+  m_LocalPosition: {x: -166, y: 205.3725, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 609198974}
@@ -293,7 +293,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 609198973}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 64, y: -79.229996, z: 0}
+  m_LocalPosition: {x: 166, y: -205.3725, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 513201912}
@@ -312,9 +312,9 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 1040084270}
-  - component: {fileID: 1040084273}
   - component: {fileID: 1040084272}
   - component: {fileID: 1040084271}
+  - component: {fileID: 1040084273}
   m_Layer: 5
   m_Name: HorizontalScrollView
   m_TagString: Untagged
@@ -329,7 +329,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1040084269}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 80.369995, z: 0}
+  m_LocalPosition: {x: 0, y: 208.3275, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1856831219}
@@ -382,7 +382,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1040084269}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1367256648, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 70054beaaceee4bf896f0d214bfbb0ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Content: {fileID: 30925670}
@@ -396,15 +396,16 @@ MonoBehaviour:
   m_Viewport: {fileID: 1856831219}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 0}
-  m_HorizontalScrollbarVisibility: 2
-  m_VerticalScrollbarVisibility: 2
-  m_HorizontalScrollbarSpacing: -3
-  m_VerticalScrollbarSpacing: -3
+  m_HorizontalScrollbarVisibility: 0
+  m_VerticalScrollbarVisibility: 0
+  m_HorizontalScrollbarSpacing: 0
+  m_VerticalScrollbarSpacing: 0
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
     m_TypeName: UnityEngine.UI.ScrollRect+ScrollRectEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  canUpdateVelocity: 1
 --- !u!1 &1197571902
 GameObject:
   m_ObjectHideFlags: 0
@@ -487,7 +488,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1197571902}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 64, y: 114, z: 0}
+  m_LocalPosition: {x: 166, y: 295.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1040084270}
@@ -667,7 +668,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1856831218}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -64, y: 33.630005, z: 0}
+  m_LocalPosition: {x: -166, y: 87.1725, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 30925670}
@@ -732,9 +733,9 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 1974820035}
-  - component: {fileID: 1974820038}
   - component: {fileID: 1974820037}
   - component: {fileID: 1974820036}
+  - component: {fileID: 1974820038}
   m_Layer: 5
   m_Name: VerticalScrollView
   m_TagString: Untagged
@@ -749,7 +750,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1974820034}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -34.770004, z: 0}
+  m_LocalPosition: {x: 0, y: -90.1275, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 513201912}
@@ -802,7 +803,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1974820034}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 1367256648, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 70054beaaceee4bf896f0d214bfbb0ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Content: {fileID: 609198974}
@@ -816,12 +817,13 @@ MonoBehaviour:
   m_Viewport: {fileID: 513201912}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 0}
-  m_HorizontalScrollbarVisibility: 2
-  m_VerticalScrollbarVisibility: 2
-  m_HorizontalScrollbarSpacing: -3
-  m_VerticalScrollbarSpacing: -3
+  m_HorizontalScrollbarVisibility: 0
+  m_VerticalScrollbarVisibility: 0
+  m_HorizontalScrollbarSpacing: 0
+  m_VerticalScrollbarSpacing: 0
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
     m_TypeName: UnityEngine.UI.ScrollRect+ScrollRectEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+  canUpdateVelocity: 1
