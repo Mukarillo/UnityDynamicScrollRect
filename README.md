@@ -123,6 +123,9 @@ Change the current list of the scroll rect.
 |`active` |**bool** |*enable or Disable the ability to scroll the list*  |
 
 
+> `dynamicScroll.GetLowest`
+- *Description*: Returns the most left (if horizontal scroll) or most bottom (if vertical scroll) T1 object.
 
 
-
+> `dynamicScroll.GetHighest`
+- *Description*: Returns the most right (if horizontal scroll) or most upper (if vertical scroll) T1 object.
