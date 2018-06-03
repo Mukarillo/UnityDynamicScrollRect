@@ -332,7 +332,7 @@ namespace dynamicscroll
 					//Going Down
 					var limit = mScrollRect.content.rect.height;
 					var objPosY = contentPos.y + highestPos.y + spacing + limit;
-
+                    
 					if (objPosY < limit)
 					{
 						mScrollRect.StopMovement();                  
@@ -340,12 +340,12 @@ namespace dynamicscroll
 						return true;
 					}
 				}
-				else if (lowestObj.currentIndex == mInfoList.Length - 1)
+				if (lowestObj.currentIndex == mInfoList.Length - 1)
                 {
                     //Going Up
 					var objPosY = contentPos.y + lowestPos.y + mScrollRect.content.rect.height - spacing;
 					var limit = lowestObj.currentHeight;
-
+                    
                     if (objPosY > limit)
                     {
                         mScrollRect.StopMovement();                  
@@ -369,7 +369,7 @@ namespace dynamicscroll
                         return true;
                     }
                 }
-				else if (lowestObj.currentIndex == 0)
+				if (lowestObj.currentIndex == 0)
                 {
                     //Going Right
 					var objPosX = mScrollRect.content.anchoredPosition.x + lowestPos.x + mScrollRect.content.rect.width - spacing;
