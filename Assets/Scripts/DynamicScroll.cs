@@ -32,7 +32,7 @@ namespace dynamicscroll
 
         private int mInitialAmount;
 
-        public void Initiate(ScrollRect scrollRect, T[] infoList, int startIndex, GameObject objReference, int initialAmount, bool createMoreIfNeeded = true)
+        public void Initiate(ScrollRect scrollRect, T[] infoList, int startIndex, GameObject objReference, bool createMoreIfNeeded = true)
         {
             mScrollRect = scrollRect;
             if (mScrollRect == null)
@@ -40,8 +40,6 @@ namespace dynamicscroll
 
             if (objReference == null)
                 throw new Exception("No Reference GameObject setted.");
-            
-            mInitialAmount = initialAmount;
 
             mInfoList = infoList;
             
@@ -73,7 +71,7 @@ namespace dynamicscroll
             mIsVertical = mScrollRect.vertical;
 
             objectPool.createMoreIfNeeded = createMoreIfNeeded;
-			objectPool.Initialize(Mathf.Min(initialAmount, infoList.Length), objReference, mScrollRect.content);
+			objectPool.Initialize(0, objReference, mScrollRect.content);
 
 			CreateList(mInfoList, startIndex);
             
@@ -108,24 +106,26 @@ namespace dynamicscroll
         private void CreateList(T[] infoList, int startIndex)
 		{
 			float totalSize = 0f;
-			int toCreate = Mathf.Min(mInitialAmount, infoList.Length);
             var lastObjectPosition = Vector2.zero;
-            for (var i = 0; i < toCreate; i++)
-            {
-				if (startIndex + i >= infoList.Length)
-					break;
-                var obj = objectPool.Collect();
-				obj.updateScrollObject(mInfoList[startIndex + i], startIndex + i);
-                var rect = obj.GetComponent<RectTransform>();
-                var posX = i > 0 ? lastObjectPosition.x + (mIsHorizontal ? +spacing : 0) : 0;
-                var posY = i > 0 ? lastObjectPosition.y - (mIsVertical ? spacing : 0) : 0;
-                rect.anchoredPosition = new Vector2(posX, posY);
+			var currentIndex = startIndex;
+
+			do
+			{
+				var obj = objectPool.Collect();
+				obj.updateScrollObject(mInfoList[currentIndex], currentIndex);
+				var posX = currentIndex > 0 ? lastObjectPosition.x + (mIsHorizontal ? spacing : 0) : 0;
+				var posY = currentIndex > 0 ? lastObjectPosition.y - (mIsVertical ? spacing : 0) : 0;
+				obj.GetComponent<RectTransform>().anchoredPosition = new Vector2(posX, posY);
                 lastObjectPosition = new Vector2(posX + (mIsHorizontal ? obj.currentWidth : 0), posY - (mIsVertical ? obj.currentHeight : 0));
 
                 totalSize += (mIsVertical) ? obj.currentHeight : obj.currentWidth;
-            }
+				currentIndex++;
+			}
+			while (startIndex < infoList.Length &&
+			       (mIsVertical && totalSize < (mScrollRect.content.rect.height * 2f)) ||
+			       (mIsHorizontal && totalSize < (mScrollRect.content.rect.width * 2f)));
 
-            totalSize = (totalSize / (float)toCreate) * infoList.Length;
+			totalSize = (totalSize / (float)(currentIndex - startIndex)) * infoList.Length;
             bool canDrag = (mIsHorizontal && totalSize > mScrollRect.content.rect.width) || (mIsVertical && totalSize > mScrollRect.content.rect.height);
             ToggleScroll(canDrag);
 		}

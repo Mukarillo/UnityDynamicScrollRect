@@ -21,12 +21,12 @@ namespace example
 			WWW www = new WWW(@"https://jsonplaceholder.typicode.com/comments");
 			yield return www;
 			mData = JsonHelper.getJsonArray<ExampleData>(www.text);
-
+            
 			mVerticalDynamicScroll.spacing = 5f;
-			mVerticalDynamicScroll.Initiate(verticalScroll, mData, 0, referenceObject, 7);
+			mVerticalDynamicScroll.Initiate(verticalScroll, mData, 0, referenceObject);
 
 			mHorizontalDynamicScroll.spacing = 5f;
-			mHorizontalDynamicScroll.Initiate(horizontalScroll, mData, 0, referenceObject, 3);
+			mHorizontalDynamicScroll.Initiate(horizontalScroll, mData, 0, referenceObject);
 		}      
 	}
 }

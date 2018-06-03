@@ -66,7 +66,7 @@ public class ExampleScroll : MonoBehaviour
     var data = JsonHelper.getJsonArray<ExampleData>(www.text);
 
     mVerticalDynamicScroll.spacing = 5f;
-    mVerticalDynamicScroll.Initiate(verticalScroll, data, 0, referenceObject, 7);
+    mVerticalDynamicScroll.Initiate(verticalScroll, data, 0, referenceObject);
   }      
 }
 ```
@@ -92,7 +92,6 @@ public class ExampleScroll : MonoBehaviour
 |`infoList` |**T[]** |*the list with the data information*  |
 |`startIndex` |**int** |*the item of index `startindex` will be the first element of the list*  |
 |`objReference` |**GameObject** |*a reference of the object that will be inside the list*  |
-|`initialAmount` |**int** |*the amount of itens to be spawned at the begining*  |
 |`createMoreIfNeeded` |**bool** |*if the list needs more itens, it will create more if `createMoreIfNeeded` == true*  |
 
 
