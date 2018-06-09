@@ -114,7 +114,7 @@ namespace dynamicscroll
                     obj.updateScrollObject(this.infoList[currentIndex], currentIndex);
                     var posX = currentIndex > 0 ? lastObjectPosition.x + (mIsHorizontal ? spacing : 0) : 0;
                     var posY = currentIndex > 0 ? lastObjectPosition.y - (mIsVertical ? spacing : 0) : 0;
-                    obj.GetComponent<RectTransform>().anchoredPosition = new Vector2(posX, posY);
+					obj.rectTransform.anchoredPosition = new Vector2(posX, posY);
                     lastObjectPosition = new Vector2(posX + (mIsHorizontal ? obj.currentWidth : 0), posY - (mIsVertical ? obj.currentHeight : 0));
 
                     totalSize += (mIsVertical) ? obj.currentHeight : obj.currentWidth;
@@ -142,8 +142,8 @@ namespace dynamicscroll
                 var currentObject = objectPool.Find(x => x.currentIndex == index);
                 if (currentObject != null && currentObject.isUsing && currentObject.CompareTo(lastObject) != 0)
                 {
-                    var no = currentObject.GetComponent<RectTransform>();
-                    var lo = lastObject.GetComponent<RectTransform>();
+					var no = currentObject.rectTransform;
+					var lo = lastObject.rectTransform;
                     var x = (mIsHorizontal ? lo.anchoredPosition.x + lastObject.currentWidth + spacing : no.anchoredPosition.x);
                     var y = (mIsVertical ? lo.anchoredPosition.y - lastObject.currentHeight - spacing : no.anchoredPosition.y);
                     no.anchoredPosition = new Vector2(x, y);
@@ -159,6 +159,7 @@ namespace dynamicscroll
 
             bool canDrag = (mIsHorizontal && totalSize > mScrollRect.viewport.rect.width) || (mIsVertical && totalSize > mScrollRect.viewport.rect.height);
 			ToggleScroll(canDrag);
+			LimitScroll();
         }
 
         public void ToggleScroll(bool active)
@@ -203,9 +204,9 @@ namespace dynamicscroll
 			//ApplyOffsetIfNeeded();         
 
 			var lowestObj = GetLowest();
-			var lowestRect = lowestObj.GetComponent<RectTransform>();
+			var lowestRect = lowestObj.rectTransform;
 			var highestObj = GetHighest();
-			var highestRect = highestObj.GetComponent<RectTransform>();
+			var highestRect = highestObj.rectTransform;
 
 			if(mIsHorizontal)
 			{
@@ -224,7 +225,7 @@ namespace dynamicscroll
 						mNewAnchoredPosition = lowestRect.anchoredPosition;
 						mNewAnchoredPosition.x += -lowestObj.currentWidth - spacing;
 
-						obj.GetComponent<RectTransform>().anchoredPosition = mNewAnchoredPosition;
+						obj.rectTransform.anchoredPosition = mNewAnchoredPosition;
 					}
 				}
 				else if(mScrollVelocity.x < 0)
@@ -242,7 +243,7 @@ namespace dynamicscroll
 						mNewAnchoredPosition = highestRect.anchoredPosition;
 						mNewAnchoredPosition.x += obj.currentWidth + spacing;
 
-						obj.GetComponent<RectTransform>().anchoredPosition = mNewAnchoredPosition;
+						obj.rectTransform.anchoredPosition = mNewAnchoredPosition;
 					}
 				}
 			}
@@ -263,7 +264,7 @@ namespace dynamicscroll
 						mNewAnchoredPosition = lowestRect.anchoredPosition;
 						mNewAnchoredPosition.y += -lowestObj.currentHeight - spacing;
 
-                        obj.GetComponent<RectTransform>().anchoredPosition = mNewAnchoredPosition;
+						obj.rectTransform.anchoredPosition = mNewAnchoredPosition;
 					}
                 }
                 else if (mScrollVelocity.y < 0)
@@ -281,7 +282,7 @@ namespace dynamicscroll
 						mNewAnchoredPosition = highestRect.anchoredPosition;
 						mNewAnchoredPosition.y += obj.currentHeight + spacing;
                                                       
-                        obj.GetComponent<RectTransform>().anchoredPosition = mNewAnchoredPosition;
+						obj.rectTransform.anchoredPosition = mNewAnchoredPosition;
 					}
                 }
 			}
@@ -293,14 +294,12 @@ namespace dynamicscroll
             {
                 var v = (mScrollRect.content.anchoredPosition.y > 0 ? -CONTENT_OFFSET_FIXER_LIMIT : CONTENT_OFFSET_FIXER_LIMIT);
                 mScrollRect.content.anchoredPosition = new Vector2(mScrollRect.content.anchoredPosition.x, mScrollRect.content.anchoredPosition.y + v);
-                RectTransform objRectTransform;
                 Vector2 objAnchoredPos;
                 objectPool.ForEach(x =>
                 {
-                    objRectTransform = x.GetComponent<RectTransform>();
-                    objAnchoredPos.x = objRectTransform.anchoredPosition.x;
-                    objAnchoredPos.y = objRectTransform.anchoredPosition.y - v;
-                    objRectTransform.anchoredPosition = objAnchoredPos;
+					objAnchoredPos.x = x.rectTransform.anchoredPosition.x;
+					objAnchoredPos.y = x.rectTransform.anchoredPosition.y - v;
+					x.rectTransform.anchoredPosition = objAnchoredPos;
                 });
             }
 
@@ -308,14 +307,12 @@ namespace dynamicscroll
             {
                 var v = (mScrollRect.content.anchoredPosition.x > 0 ? -CONTENT_OFFSET_FIXER_LIMIT : CONTENT_OFFSET_FIXER_LIMIT);
                 mScrollRect.content.anchoredPosition = new Vector2(mScrollRect.content.anchoredPosition.x + v, mScrollRect.content.anchoredPosition.y);
-                RectTransform objRectTransform;
                 Vector2 objAnchoredPos;
                 objectPool.ForEach(x =>
                 {
-                    objRectTransform = x.GetComponent<RectTransform>();
-                    objAnchoredPos.x = objRectTransform.anchoredPosition.x - v;
-                    objAnchoredPos.y = objRectTransform.anchoredPosition.y;
-                    objRectTransform.anchoredPosition = objAnchoredPos;
+					objAnchoredPos.x = x.rectTransform.anchoredPosition.x - v;
+					objAnchoredPos.y = x.rectTransform.anchoredPosition.y;
+					x.rectTransform.anchoredPosition = objAnchoredPos;
                 });
             }
 		}
@@ -323,9 +320,9 @@ namespace dynamicscroll
 		private bool LimitScroll()
         {
 			var lowestObj = GetLowest();
-			var lowestPos = lowestObj.GetComponent<RectTransform>().anchoredPosition;
+			var lowestPos = lowestObj.rectTransform.anchoredPosition;
             var highestObj = GetHighest();
-			var highestPos = highestObj.GetComponent<RectTransform>().anchoredPosition;
+			var highestPos = highestObj.rectTransform.anchoredPosition;
 			var contentPos = mScrollRect.content.anchoredPosition;
 
             if (mIsVertical)
@@ -398,7 +395,7 @@ namespace dynamicscroll
 
 			foreach (var t in objs)
             {
-				var rectTransform = t.GetComponent<RectTransform>().anchoredPosition;
+				var rectTransform = t.rectTransform.anchoredPosition;
                 
                 if (mIsVertical && rectTransform.y < min || mIsHorizontal && rectTransform.x < min)
                 {
@@ -417,7 +414,7 @@ namespace dynamicscroll
             var objs = objectPool;
             foreach (var t in objs)
             {
-				var rectTransform = t.GetComponent<RectTransform>().anchoredPosition;
+				var rectTransform = t.rectTransform.anchoredPosition;
 
 				if(mIsVertical && rectTransform.y > max || mIsHorizontal && rectTransform.x > max)
 				{

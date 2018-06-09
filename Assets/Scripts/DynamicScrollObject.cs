@@ -1,5 +1,6 @@
 ﻿using System;
 using pooling;
+using UnityEngine;
 
 namespace dynamicscroll
 {
@@ -7,11 +8,21 @@ namespace dynamicscroll
     public abstract class DynamicScrollObject<T> : PoolObject, IScrollItem, IComparable
     {
         protected Action mRefreshListAction;
+		protected RectTransform mRectTransform;
 
         public virtual void reset() { }
         public virtual float currentHeight { get; set; }
         public virtual float currentWidth { get; set; }
         public virtual int currentIndex { get; set; }
+
+		public RectTransform rectTransform
+		{
+			get
+			{
+				if (mRectTransform == null) mRectTransform = GetComponent<RectTransform>();
+				return mRectTransform;
+			}
+		}
 
 		public virtual void updateScrollObject(T item, int index)
 		{
