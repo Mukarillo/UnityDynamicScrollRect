@@ -103,6 +103,7 @@ namespace dynamicscroll
 		{
 			float totalSize = 0f;
             var lastObjectPosition = Vector2.zero;
+			startIndex = Mathf.Max(0, startIndex);
 			var currentIndex = startIndex;
 		    bool canDrag = false;
 
