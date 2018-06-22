@@ -122,6 +122,16 @@ Change the current list of the scroll rect.
 |`active` |**bool** |*enable or Disable the ability to scroll the list*  |
 
 
+> `dynamicScroll.CanMove`
+- *Description*: Returns true if all directions send thro parameter are available.
+
+- *Parameters* :
+
+|name  |type  |description  |
+|--|--|--|
+|`directions` |**ScrollDirection** |*Enum flag with all the directions you want to know if are available*  |
+
+
 > `dynamicScroll.GetLowest`
 - *Description*: Returns the most left (if horizontal scroll) or most bottom (if vertical scroll) T1 object.
 

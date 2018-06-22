@@ -27,6 +27,6 @@ namespace example
 
 			mHorizontalDynamicScroll.spacing = 5f;
 			mHorizontalDynamicScroll.Initiate(horizontalScroll, mData, 0, referenceObject);
-		}      
+		}
 	}
 }

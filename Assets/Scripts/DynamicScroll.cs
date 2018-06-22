@@ -5,10 +5,20 @@ using pooling;
 
 namespace dynamicscroll
 {
+	[Flags]
+    public enum ScrollDirection
+    {
+        NONE = 0x0,
+        LEFT = 0x1,
+        RIGHT = 0x2,
+        UP = 0x4,
+        DOWN = 0x8
+    }
+
     public class DynamicScroll<T, T1> 
         where T : class
         where T1 : DynamicScrollObject<T>
-    {
+    {      
         public const float CONTENT_OFFSET_FIXER_LIMIT = 1000f;
         public float spacing = 15f;
         public readonly Pooling<T1> objectPool = new Pooling<T1>();
@@ -22,6 +32,8 @@ namespace dynamicscroll
 
         private bool mIsVertical = false;
         private bool mIsHorizontal = false;
+
+		private ScrollDirection mLastInvalidDirections;
             
         private Vector2 mNewAnchoredPosition = Vector2.zero;
 		private Vector2 mScrollVelocity = Vector2.zero;
@@ -162,20 +174,7 @@ namespace dynamicscroll
 			ToggleScroll(canDrag);
 			LimitScroll();
         }
-
-        public void ToggleScroll(bool active)
-        {
-            mScrollRect.enabled = active;
-            mScrollRect.viewport.anchorMin = new Vector2(0, 0);
-            mScrollRect.viewport.anchorMax = new Vector2(1, 1);
-            mScrollRect.viewport.offsetMin = new Vector2(0, 0);
-            mScrollRect.viewport.offsetMax = new Vector2(0, 0);
-            mScrollRect.viewport.pivot = new Vector2(0.5f, 0.5f);
-
-            if (!active)
-				mScrollRect.content.anchoredPosition = Vector2.zero;
-        }
-
+        
         private void DisableGridComponents()
         {
             if (mVerticalLayoutGroup != null)
@@ -195,8 +194,9 @@ namespace dynamicscroll
         {
 			mScrollVelocity = mScrollRect.content.anchoredPosition - mLastPos;
             mLastPos = mScrollRect.content.anchoredPosition;
-            
-			if (LimitScroll()) return;
+
+			mLastInvalidDirections = LimitScroll();
+			if ((mLastInvalidDirections & ScrollDirection.NONE) != ScrollDirection.NONE) return;
 
 			if(OnDragEvent != null)
                 OnDragEvent.Invoke(mScrollVelocity);
@@ -318,14 +318,23 @@ namespace dynamicscroll
             }
 		}
 
-		private bool LimitScroll()
+		private void StopScrollAndChangeContentPosition(Vector2 pos)
+		{
+			mScrollRect.StopMovement();
+            mScrollRect.enabled = false;
+			mScrollRect.content.anchoredPosition = pos;
+            mScrollRect.enabled = true;
+		}
+
+		private ScrollDirection LimitScroll()
         {
+			ScrollDirection invalidDirections = ScrollDirection.NONE;
 			var lowestObj = GetLowest();
 			var lowestPos = lowestObj.rectTransform.anchoredPosition;
             var highestObj = GetHighest();
 			var highestPos = highestObj.rectTransform.anchoredPosition;
 			var contentPos = mScrollRect.content.anchoredPosition;
-
+            
             if (mIsVertical)
             {
 				if (highestObj.currentIndex == 0)
@@ -336,9 +345,8 @@ namespace dynamicscroll
                     
 					if (objPosY < limit)
 					{
-						mScrollRect.StopMovement();                  
-						mScrollRect.content.anchoredPosition = new Vector2(contentPos.x, contentPos.y + limit - objPosY);
-						return true;
+						StopScrollAndChangeContentPosition(new Vector2(contentPos.x, contentPos.y + limit - objPosY));
+						invalidDirections |= ScrollDirection.DOWN;
 					}
 				}
 				if (lowestObj.currentIndex == infoList.Length - 1)
@@ -349,9 +357,8 @@ namespace dynamicscroll
                     
                     if (objPosY > limit)
                     {
-                        mScrollRect.StopMovement();                  
-						mScrollRect.content.anchoredPosition = new Vector2(contentPos.x, contentPos.y + limit - objPosY);
-                        return true;
+						StopScrollAndChangeContentPosition(new Vector2(contentPos.x, contentPos.y + limit - objPosY));
+						invalidDirections |= ScrollDirection.UP;
                     }               
                 }
             }
@@ -364,10 +371,9 @@ namespace dynamicscroll
 					var limit = mScrollRect.content.rect.width;
 
                     if (objPosX < limit)
-                    {
-                        mScrollRect.StopMovement();
-						mScrollRect.content.anchoredPosition = new Vector2(contentPos.x + limit - objPosX, contentPos.y);
-                        return true;
+					{
+						StopScrollAndChangeContentPosition(new Vector2(contentPos.x + limit - objPosX, contentPos.y));
+						invalidDirections |= ScrollDirection.LEFT;
                     }
                 }
 				if (lowestObj.currentIndex == 0)
@@ -378,14 +384,39 @@ namespace dynamicscroll
 
                     if (objPosX > limit)
                     {
-                        mScrollRect.StopMovement();
-						mScrollRect.content.anchoredPosition = new Vector2(contentPos.x + limit - objPosX, contentPos.y);
-                        return true;
+						StopScrollAndChangeContentPosition(new Vector2(contentPos.x + limit - objPosX, contentPos.y));
+						invalidDirections |= ScrollDirection.RIGHT;
                     }               
                 }
             }
             
-			return false;
+			return invalidDirections;
+        }
+        
+		public bool CanMove(ScrollDirection directions)
+        {
+			if (((directions & ScrollDirection.DOWN) == ScrollDirection.DOWN) && ((mLastInvalidDirections & ScrollDirection.DOWN) == ScrollDirection.DOWN))
+                return false;
+			if (((directions & ScrollDirection.UP) == ScrollDirection.UP) && ((mLastInvalidDirections & ScrollDirection.UP) == ScrollDirection.UP))
+                return false;
+			if (((directions & ScrollDirection.LEFT) == ScrollDirection.LEFT) && ((mLastInvalidDirections & ScrollDirection.LEFT) == ScrollDirection.LEFT))
+                return false;
+			if (((directions & ScrollDirection.RIGHT) == ScrollDirection.RIGHT) && ((mLastInvalidDirections & ScrollDirection.RIGHT) == ScrollDirection.RIGHT))
+                return false;
+            return true;
+        }
+
+		public void ToggleScroll(bool active)
+        {
+            mScrollRect.enabled = active;
+            mScrollRect.viewport.anchorMin = new Vector2(0, 0);
+            mScrollRect.viewport.anchorMax = new Vector2(1, 1);
+            mScrollRect.viewport.offsetMin = new Vector2(0, 0);
+            mScrollRect.viewport.offsetMax = new Vector2(0, 0);
+            mScrollRect.viewport.pivot = new Vector2(0.5f, 0.5f);
+
+            if (!active)
+                mScrollRect.content.anchoredPosition = Vector2.zero;
         }
 
         public T1 GetLowest()
