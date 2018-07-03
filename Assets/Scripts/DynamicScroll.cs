@@ -130,13 +130,12 @@ namespace dynamicscroll
 					obj.rectTransform.anchoredPosition = new Vector2(posX, posY);
                     lastObjectPosition = new Vector2(posX + (mIsHorizontal ? obj.currentWidth : 0), posY - (mIsVertical ? obj.currentHeight : 0));
 
-                    totalSize += (mIsVertical) ? obj.currentHeight : obj.currentWidth;
+					totalSize += ((mIsVertical) ? obj.currentHeight : obj.currentWidth) + spacing;
                     currentIndex++;
                 } while (currentIndex < infoList.Length &&
                          (mIsVertical && totalSize < (mScrollRect.content.rect.height * 2f)) ||
                          (mIsHorizontal && totalSize < (mScrollRect.content.rect.width * 2f)));
-
-                totalSize = (totalSize / (float)(currentIndex - startIndex)) * infoList.Length;
+                         
                 canDrag = (mIsHorizontal && totalSize > mScrollRect.content.rect.width) || (mIsVertical && totalSize > mScrollRect.content.rect.height);
             }
 
