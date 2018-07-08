@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using dynamicscroll;
+using System.Linq;
 
 namespace example
 {
 	public class ExampleScroll : MonoBehaviour
 	{
-		public ScrollRect verticalScroll;
-		public ScrollRect horizontalScroll;
+		public DynamicScrollRect verticalScroll;
+		public DynamicScrollRect horizontalScroll;
 		public GameObject referenceObject;
 
 		private ExampleData[] mData;
@@ -21,7 +22,9 @@ namespace example
 			WWW www = new WWW(@"https://jsonplaceholder.typicode.com/comments");
 			yield return www;
 			mData = JsonHelper.getJsonArray<ExampleData>(www.text);
-            
+
+			mData = mData.ToList().Take(20).ToArray();
+
 			mVerticalDynamicScroll.spacing = 5f;
 			mVerticalDynamicScroll.Initiate(verticalScroll, mData, 0, referenceObject);
 

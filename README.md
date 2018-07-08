@@ -50,11 +50,11 @@ public class ExampleDynamicObject : DynamicScrollObject<ExampleData>
   }
 }
 ```
-### 3 - Create a class to initiate the DynamicList
+### 3 - Create a class to initiate the DynamicList (use DynamicScrollRect instead of ScrollRect)
 ```c#
 public class ExampleScroll : MonoBehaviour
 {
-  public ScrollRect verticalScroll;
+  public DynamicScrollRect verticalScroll;
   public GameObject referenceObject;
 
   private DynamicScroll<ExampleData, ExampleDynamicObject> mVerticalDynamicScroll = new DynamicScroll<ExampleData, ExampleDynamicObject>();
@@ -78,6 +78,8 @@ public class ExampleScroll : MonoBehaviour
 |`spacing` |**float** |*value that represent the spacing between elements of the list*  |
 |`objectPool` |**readonly Pooling < T1 >** |*The elements of the list*  |
 |`OnDragEvent` |**Action < Vector2 >** |*Event that triggers whenever the user scrolls the list, the parameter represent the velocity of the drag*  |
+|`OnBeginDragEvent` |**UnityEvent < PointerEventData >** |*Event that triggers in the first frame of dragging*  |
+|`OnEndDragEvent` |**UnityEvent < PointerEventData >** |*Event that triggers in the last frame of dragging*  |
 
 ### Methods
 
@@ -93,6 +95,7 @@ public class ExampleScroll : MonoBehaviour
 |`startIndex` |**int** |*the item of index `startindex` will be the first element of the list*  |
 |`objReference` |**GameObject** |*a reference of the object that will be inside the list*  |
 |`createMoreIfNeeded` |**bool** |*if the list needs more itens, it will create more if `createMoreIfNeeded` == true*  |
+|`forceAmount` |**int?** |*if setted, it will force `forceAmount` objects to be created at start*  |
 
 
 > `dynamicScroll.ChangeList`
