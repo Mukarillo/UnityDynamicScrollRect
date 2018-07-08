@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using dynamicscroll;
-using System.Linq;
 
 namespace example
 {
@@ -22,8 +21,6 @@ namespace example
 			WWW www = new WWW(@"https://jsonplaceholder.typicode.com/comments");
 			yield return www;
 			mData = JsonHelper.getJsonArray<ExampleData>(www.text);
-
-			mData = mData.ToList().Take(20).ToArray();
 
 			mVerticalDynamicScroll.spacing = 5f;
 			mVerticalDynamicScroll.Initiate(verticalScroll, mData, 0, referenceObject);
