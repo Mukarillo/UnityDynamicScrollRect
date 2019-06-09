@@ -485,7 +485,7 @@ namespace dynamicscroll
             {
 				var rectTransform = t.rectTransform.anchoredPosition;
                 
-                if (mIsVertical && rectTransform.y < min || mIsHorizontal && rectTransform.x < min)
+                if (t.gameObject.activeSelf && mIsVertical && rectTransform.y < min || mIsHorizontal && rectTransform.x < min)
                 {
                     min = mIsVertical ? rectTransform.y : rectTransform.x;
 					lowestObj = t;
@@ -504,7 +504,7 @@ namespace dynamicscroll
             {
 				var rectTransform = t.rectTransform.anchoredPosition;
 
-				if(mIsVertical && rectTransform.y > max || mIsHorizontal && rectTransform.x > max)
+				if(t.gameObject.activeSelf && mIsVertical && rectTransform.y > max || mIsHorizontal && rectTransform.x > max)
 				{
 					max = mIsVertical ? rectTransform.y : rectTransform.x;
 					highestObj = t;
