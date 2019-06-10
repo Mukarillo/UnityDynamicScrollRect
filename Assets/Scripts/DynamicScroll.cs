@@ -411,37 +411,37 @@ namespace dynamicscroll
             }
             else if (mIsHorizontal)
             {
-				if (highestObj.currentIndex == infoList.Length - 1)
+                if (highestObj.currentIndex == infoList.Length - 1)
                 {
                     //Going Left
-					var objPosX = mScrollRect.content.anchoredPosition.x + highestPos.x + spacing + mScrollRect.viewport.rect.width;
-					var limit = mScrollRect.viewport.rect.width;
+                    var objPosX = mScrollRect.content.anchoredPosition.x + highestPos.x + spacing + highestObj.currentWidth;
+                    var limit = mScrollRect.viewport.rect.width;
 
                     if (objPosX < limit)
-					{
-						mClampedPosition = new Vector2(contentPos.x + limit - objPosX, contentPos.y);
-						mScrollRect.clampedPosition = mClampedPosition;
+                    {
+                        mClampedPosition = new Vector2(contentPos.x + limit - objPosX, contentPos.y);
+                        mScrollRect.clampedPosition = mClampedPosition;
 
-						if (mMovementType == ScrollRect.MovementType.Clamped)
-							StopScrollAndChangeContentPosition(mClampedPosition);
-						invalidDirections |= ScrollDirection.LEFT;
-						invalidDirections &= ~ScrollDirection.NONE;
+                        if (mMovementType == ScrollRect.MovementType.Clamped)
+                            StopScrollAndChangeContentPosition(mClampedPosition);
+                        invalidDirections |= ScrollDirection.LEFT;
+                        invalidDirections &= ~ScrollDirection.NONE;
                     }
                 }
-				if (lowestObj.currentIndex == 0)
+                if (lowestObj.currentIndex == 0)
                 {
                     //Going Right
-					var objPosX = mScrollRect.content.anchoredPosition.x + lowestPos.x + mScrollRect.viewport.rect.width - spacing;
-					var limit = lowestObj.currentWidth;
+                    var objPosX = mScrollRect.content.anchoredPosition.x + lowestPos.x;
+                    var limit = 0;
 
                     if (objPosX > limit)
                     {
-						mClampedPosition = new Vector2(contentPos.x + limit - objPosX, contentPos.y);
+                        mClampedPosition = new Vector2(contentPos.x + limit - objPosX, contentPos.y);
 
-						if (mMovementType == ScrollRect.MovementType.Clamped)
-							StopScrollAndChangeContentPosition(mClampedPosition);
-						invalidDirections |= ScrollDirection.RIGHT;
-						invalidDirections &= ~ScrollDirection.NONE;
+                        if (mMovementType == ScrollRect.MovementType.Clamped)
+                            StopScrollAndChangeContentPosition(mClampedPosition);
+                        invalidDirections |= ScrollDirection.RIGHT;
+                        invalidDirections &= ~ScrollDirection.NONE;
                     }
                 }
             }
