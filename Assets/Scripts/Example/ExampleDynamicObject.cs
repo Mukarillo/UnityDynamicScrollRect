@@ -20,17 +20,14 @@ namespace example
 
 		public void Awake()
 		{
-			currentHeight = GetComponent<RectTransform>().rect.height;
-			currentWidth = GetComponent<RectTransform>().rect.width;
-
 			idText = transform.Find("PostId").GetComponent<Text>();
 			nameEmailText = transform.Find("NameEmail").GetComponent<Text>();
 			bodyText = transform.Find("Body").GetComponent<Text>();         
 		}
 
-		public override void updateScrollObject(ExampleData item, int index)
+		public override void UpdateScrollObject(ExampleData item, int index)
 		{
-			base.updateScrollObject(item, index);
+			base.UpdateScrollObject(item, index);
 
 			idText.text = item.id.ToString();
 			nameEmailText.text = string.Format("{0} ({1})", item.name, item.email);

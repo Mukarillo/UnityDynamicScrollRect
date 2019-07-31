@@ -4,8 +4,8 @@ namespace dynamicscroll
 {
     public interface IScrollItem
     {
-        void reset();
-        int currentIndex { get; set; }
-		RectTransform rectTransform { get; }
+        void Reset();
+        int CurrentIndex { get; set; }
+        RectTransform RectTransform { get; }
     }
 }

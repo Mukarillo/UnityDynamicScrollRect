@@ -1,7 +1,5 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using dynamicscroll;
 
 namespace example
@@ -23,10 +21,32 @@ namespace example
 			mData = JsonHelper.getJsonArray<ExampleData>(www.text);
 
 			mVerticalDynamicScroll.spacing = 5f;
-			mVerticalDynamicScroll.Initiate(verticalScroll, mData, 0, referenceObject);
+            mVerticalDynamicScroll.centralizeOnStop = true;
+            mVerticalDynamicScroll.Initiate(verticalScroll, mData, 0, referenceObject);
 
 			mHorizontalDynamicScroll.spacing = 5f;
 			mHorizontalDynamicScroll.Initiate(horizontalScroll, mData, 0, referenceObject);
 		}
-	}
+
+        public void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1)) Move(1);
+            if (Input.GetKeyDown(KeyCode.Alpha2)) Move(2);
+            if (Input.GetKeyDown(KeyCode.Alpha3)) Move(3);
+            if (Input.GetKeyDown(KeyCode.Alpha4)) Move(4);
+            if (Input.GetKeyDown(KeyCode.Alpha5)) Move(5);
+            if (Input.GetKeyDown(KeyCode.Alpha6)) Move(6);
+            if (Input.GetKeyDown(KeyCode.Alpha7)) Move(7);
+            if (Input.GetKeyDown(KeyCode.Alpha8)) Move(8);
+            if (Input.GetKeyDown(KeyCode.Alpha9)) Move(9);
+
+            if (Input.GetKeyDown(KeyCode.Alpha0)) Move(300);
+        }
+
+        private void Move(int index)
+        {
+            mVerticalDynamicScroll.MoveToIndex(index, 2f);
+            mHorizontalDynamicScroll.MoveToIndex(index, 2f);
+        }
+    }
 }

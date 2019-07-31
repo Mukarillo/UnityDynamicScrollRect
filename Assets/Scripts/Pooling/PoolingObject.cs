@@ -2,7 +2,7 @@
 
 namespace pooling
 {
-	public abstract class PoolObject : MonoBehaviour, IPooling
+	public abstract class PoolingObject : MonoBehaviour, IPooling
     {
 		public virtual string objectName{ get { return ""; } }
 		public bool isUsing { get; set; }
