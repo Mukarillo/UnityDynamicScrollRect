@@ -75,7 +75,8 @@ public class ExampleScroll : MonoBehaviour
 ### Properties
 |name  |type  |description  |
 |--|--|--|
-|`spacing` |**float** |*value that represent the spacing between elements of the list*  |
+|`spacing` |**float** |*Value that represent the spacing between elements of the list*  |
+|`centralizeOnStop` |**bool** |*If the list should centralize the closest element to the center of the viewport after stop moving*  |
 |`objectPool` |**readonly Pooling < T1 >** |*The elements of the list*  |
 |`OnDragEvent` |**Action < Vector2 >** |*Event that triggers whenever the user scrolls the list, the parameter represent the velocity of the drag*  |
 |`OnBeginDragEvent` |**UnityEvent < PointerEventData >** |*Event that triggers in the first frame of dragging*  |
@@ -135,9 +136,22 @@ Change the current list of the scroll rect.
 |`directions` |**ScrollDirection** |*Enum flag with all the directions you want to know if are available*  |
 
 
+> `dynamicScroll.MoveToIndex`
+- *Description*: Tweens the content to centralize the object of index specified in the parameters.
+
+- *Parameters* :
+
+|name  |type  |description  |
+|--|--|--|
+|`i` |**int** |*Index of the element to be centralized*  |
+|`totalTime` |**float?** |*Total time to the animation happen (if you choose to input this value, the next one will be ignored)*  |
+|`timePerElement` |**float?** |*This value will be multiplied by the difference between the current centralized element and the target element to get the totalTime*  |
+
+> `dynamicScroll.GetCentralizedObject`
+- *Description*: Returns the closest element to the center of the viewport.
+
 > `dynamicScroll.GetLowest`
 - *Description*: Returns the most left (if horizontal scroll) or most bottom (if vertical scroll) T1 object.
-
 
 > `dynamicScroll.GetHighest`
 - *Description*: Returns the most right (if horizontal scroll) or most upper (if vertical scroll) T1 object.
