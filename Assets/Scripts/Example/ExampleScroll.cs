@@ -11,6 +11,7 @@ namespace example
 		public GameObject referenceObject;
 
 		private ExampleData[] mData;
+
 		private DynamicScroll<ExampleData, ExampleDynamicObject> mVerticalDynamicScroll = new DynamicScroll<ExampleData, ExampleDynamicObject>();
 		private DynamicScroll<ExampleData, ExampleDynamicObject> mHorizontalDynamicScroll = new DynamicScroll<ExampleData, ExampleDynamicObject>();
 
@@ -20,12 +21,12 @@ namespace example
 			yield return www;
 			mData = JsonHelper.getJsonArray<ExampleData>(www.text);
 
-			mVerticalDynamicScroll.spacing = 5f;
+            mHorizontalDynamicScroll.spacing = 5f;
+            mHorizontalDynamicScroll.Initiate(horizontalScroll, mData, 0, referenceObject);
+
+            mVerticalDynamicScroll.spacing = 5f;
             mVerticalDynamicScroll.centralizeOnStop = true;
             mVerticalDynamicScroll.Initiate(verticalScroll, mData, 0, referenceObject);
-
-			mHorizontalDynamicScroll.spacing = 5f;
-			mHorizontalDynamicScroll.Initiate(horizontalScroll, mData, 0, referenceObject);
 		}
 
         public void Update()

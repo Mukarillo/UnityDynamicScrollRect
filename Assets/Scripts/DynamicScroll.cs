@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using pooling;
 using DG.Tweening;
 using UnityEngine;
@@ -50,10 +51,10 @@ namespace dynamicscroll
 		private Vector2 mScrollVelocity = Vector2.zero;
 		private Vector2 mLastPos = Vector2.zero;
 		private Vector2 mClampedPosition = Vector2.zero;
-		private T[] infoList;
+		private IList<T> infoList;
         private Tween forceMoveTween;
 
-		public void Initiate(DynamicScrollRect scrollRect, T[] infoList, int startIndex, GameObject objReference, bool createMoreIfNeeded = true, int? forceAmount = null)
+		public void Initiate(DynamicScrollRect scrollRect, IList<T> infoList, int startIndex, GameObject objReference, bool createMoreIfNeeded = true, int? forceAmount = null)
         {
             ScrollRect = scrollRect;
             if (ScrollRect == null)
@@ -99,10 +100,8 @@ namespace dynamicscroll
 
             objectPool.createMoreIfNeeded = createMoreIfNeeded;
 			objectPool.Initialize(forceAmount ?? 0, objReference, ScrollRect.content);
-
-			DisableGridComponents();
-
-			CreateList(startIndex);         
+            
+			CreateList(startIndex);
 
             objectPool.ForEach(x =>
             {
@@ -111,6 +110,7 @@ namespace dynamicscroll
             });
 
             SetCentralizedObject();
+            DisableGridComponents();
 
             if (!mIsHorizontal || !mIsVertical) return;
             Debug.LogError("DynamicScroll doesn't support scrolling in both directions, please choose one direction (horizontal or vertical)");
@@ -129,7 +129,7 @@ namespace dynamicscroll
         }
 
         //if startIndex = -1, it will keep the same position
-		public void ChangeList(T[] infoList, int startIndex = -1, bool resetContentPosition = false)
+		public void ChangeList(IList<T> infoList, int startIndex = -1, bool resetContentPosition = false)
         {
             if (startIndex == -1)
                 startIndex = GetHighest().CurrentIndex;
@@ -155,7 +155,7 @@ namespace dynamicscroll
 			var currentIndex = startIndex;
 		    var canDrag = false;
 
-            if (infoList != null && infoList.Length > 0)
+            if (infoList != null && infoList.Count > 0)
             {
                 do
                 {
@@ -168,9 +168,9 @@ namespace dynamicscroll
 
 					totalSize += ((mIsVertical) ? obj.CurrentHeight : obj.CurrentWidth) + spacing;
                     currentIndex++;
-                } while (currentIndex < infoList.Length &&
-				         (mIsVertical && totalSize < (ScrollRect.viewport.rect.height * 3f)) ||
-				         (mIsHorizontal && totalSize < (ScrollRect.viewport.rect.width * 3f)));
+                } while (currentIndex < infoList.Count &&
+				         (mIsVertical && totalSize < (ScrollRect.viewport.rect.height * 2f)) ||
+				         (mIsHorizontal && totalSize < (ScrollRect.viewport.rect.width * 2f)));
                          
 				canDrag = (mIsHorizontal && totalSize > ScrollRect.viewport.rect.width) || (mIsVertical && totalSize > ScrollRect.viewport.rect.height);
             }
@@ -263,8 +263,8 @@ namespace dynamicscroll
 			{
 				if(mScrollVelocity.x > 0)
 				{
-					while(highestRect.anchoredPosition.x + ScrollRect.content.anchoredPosition.x - (highestObj.CurrentWidth / 2f)
-                        > (ScrollRect.viewport.rect.width / 2f) + (highestObj.CurrentWidth * 0.1f))
+					while(highestRect.anchoredPosition.x + ScrollRect.content.anchoredPosition.x
+                        > ScrollRect.viewport.rect.width + (highestObj.CurrentWidth * 0.1f))
                     {
 						var nextIndex = lowestObj.CurrentIndex - 1;
 						if (nextIndex < 0) return;
@@ -281,12 +281,12 @@ namespace dynamicscroll
                     }
 				}
 				else if(mScrollVelocity.x < 0)
-				{
+                {
                     while (lowestRect.anchoredPosition.x + ScrollRect.content.anchoredPosition.x + (lowestObj.CurrentWidth / 2f)
                         < (-ScrollRect.viewport.rect.width / 2f) - (lowestObj.CurrentWidth * 0.1f))
 					{
 						var nextIndex = highestObj.CurrentIndex + 1;
-						if (nextIndex >= infoList.Length) return;
+						if (nextIndex >= infoList.Count) return;
 						objectPool.Release(lowestObj);                  
                         var obj = objectPool.Collect();
                         obj.UpdateScrollObject(infoList[nextIndex], nextIndex);
@@ -308,7 +308,7 @@ namespace dynamicscroll
                         > ((ScrollRect.viewport.rect.height / 2f) + highestObj.CurrentHeight * 0.1f))
                     {
                         var nextIndex = lowestObj.CurrentIndex + 1;
-                        if (nextIndex >= infoList.Length) return;
+                        if (nextIndex >= infoList.Count) return;
                         objectPool.Release(highestObj);
                         var obj = objectPool.Collect();
                         obj.UpdateScrollObject(infoList[nextIndex], nextIndex);
@@ -324,7 +324,7 @@ namespace dynamicscroll
                 else if (mScrollVelocity.y < 0)
                 {
                     while (lowestRect.anchoredPosition.y + ScrollRect.content.anchoredPosition.y + (highestObj.CurrentHeight / 2f)
-                        < -((ScrollRect.viewport.rect.height / 2f) + lowestObj.CurrentHeight * 0.1f))
+                        < -(ScrollRect.viewport.rect.height + lowestObj.CurrentHeight * 0.1f))
                     {
                         var nextIndex = highestObj.CurrentIndex - 1;
                         if (nextIndex < 0) return;
@@ -436,7 +436,7 @@ namespace dynamicscroll
 						invalidDirections &= ~ScrollDirection.NONE;
 					}
 				}
-				if (lowestObj.CurrentIndex == infoList.Length - 1)
+				if (lowestObj.CurrentIndex == infoList.Count - 1)
                 {
                     //Going Up
 					var objPosY = contentPos.y + lowestPos.y + ScrollRect.viewport.rect.height - spacing;
@@ -457,12 +457,11 @@ namespace dynamicscroll
             }
             else if (mIsHorizontal)
             {
-                if (highestObj.CurrentIndex == infoList.Length - 1)
+                if (highestObj.CurrentIndex == infoList.Count - 1)
                 {
                     //Going Left
                     var objPosX = ScrollRect.content.anchoredPosition.x + highestPos.x + spacing + highestObj.CurrentWidth;
                     var limit = ScrollRect.viewport.rect.width;
-
                     if (objPosX < limit)
                     {
                         mClampedPosition = new Vector2(contentPos.x + limit - objPosX, contentPos.y);
@@ -528,23 +527,27 @@ namespace dynamicscroll
             var objs = objectPool.GetAllWithState(true);
             foreach (var obj in objs)
             {
-                var x = (Mathf.Abs(obj.RectTransform.anchoredPosition.x) - Mathf.Abs(ScrollRect.content.anchoredPosition.x));
-                var y = (Mathf.Abs(obj.RectTransform.anchoredPosition.y) - Mathf.Abs(ScrollRect.content.anchoredPosition.y));
-                obj.SetPositionInViewport(new Vector2(x, y));
+                var x = (Mathf.Abs(obj.RectTransform.anchoredPosition.x) - Mathf.Abs(ScrollRect.content.anchoredPosition.x)) + (obj.CurrentWidth / 2f);
+                var y = (Mathf.Abs(obj.RectTransform.anchoredPosition.y) - Mathf.Abs(ScrollRect.content.anchoredPosition.y)) + (obj.CurrentHeight / 2f);
+                obj.SetPositionInViewport(new Vector2(x, y), new Vector2(Mathf.Abs(x - ScrollRect.viewport.rect.width / 2f), Mathf.Abs(y - ScrollRect.viewport.rect.height / 2f)));
             }
         }
 
         public void MoveToIndex(int i, float? totalTime = null, float? timePerElement = null)
         {
+            if(!totalTime.HasValue && !timePerElement.HasValue)
+                throw new Exception("Either send totalTime or timePerElement to make MoveToIndex work.");
+
             var refObject = objectPool.GetAllWithState(true)[0];
-            i = Mathf.Clamp(i, 0, infoList.Length - 1);
+            i = Mathf.Clamp(i, 0, infoList.Count - 1);
             forceMoveTween?.Kill();
             ScrollRect.StopMovement();
             ScrollRect.needElasticReturn = false;
             var amountToGo = Mathf.Abs(GetCentralizedObject().CurrentIndex - i);
             var time = totalTime ?? timePerElement.Value * amountToGo;
 
-            var pos = mIsHorizontal ? - (i * (refObject.CurrentWidth + spacing)) : (i * (refObject.CurrentHeight + spacing));
+            var pos = mIsHorizontal ? - ((i * (refObject.CurrentWidth + spacing)) - (ScrollRect.viewport.rect.width / 2f) + (refObject.CurrentWidth / 2f))
+                : ((i * (refObject.CurrentHeight + spacing)) - (ScrollRect.viewport.rect.height / 2f) + (refObject.CurrentHeight / 2f));
             forceMoveTween = (mIsHorizontal ? ScrollRect.content.DOAnchorPosX(pos, time) : ScrollRect.content.DOAnchorPosY(pos, time)).SetEase(Ease.OutQuint);
         }
 
@@ -557,7 +560,8 @@ namespace dynamicscroll
             T1 centerObject = null;
             foreach (var obj in objs)
             {
-                var pos = Mathf.Abs((mIsVertical ? obj.PositionInViewport.y : obj.PositionInViewport.x));
+                var pos = Mathf.Abs((mIsVertical ? (obj.PositionInViewport.y - ScrollRect.viewport.rect.height / 2f) : 
+                    (obj.PositionInViewport.x - ScrollRect.viewport.rect.width / 2f)));
                 if (pos > distFromCenter)
                     continue;
                 

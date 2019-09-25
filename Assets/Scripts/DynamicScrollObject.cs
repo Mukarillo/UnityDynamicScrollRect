@@ -25,6 +25,7 @@ namespace dynamicscroll
         public virtual int CurrentIndex { get; set; }
         public bool IsCentralized { get; private set; }
         public Vector2 PositionInViewport { get; private set; }
+        public Vector2 DistanceFromCenter { get; private set; }
 
         public RectTransform RectTransform
         {
@@ -48,9 +49,10 @@ namespace dynamicscroll
             refreshListAction = action;
         }
 
-        public virtual void SetPositionInViewport(Vector2 position)
+        public virtual void SetPositionInViewport(Vector2 position, Vector2 distanceFromCenter)
         {
             PositionInViewport = position;
+            DistanceFromCenter = distanceFromCenter;
         }
 
         public virtual void OnObjectIsCentralized()
