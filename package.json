@@ -1,0 +1,10 @@
+{
+    "name": "com.mukarillo.dynamicscroll",
+    "displayName": "Unity Dynamic Scroll",
+    "version": "0.0.1",
+    "unity": "2019.1",
+    "description": "An optimized approach to lists with dozens of elements.",
+    "keywords": ["scrollview", "ui components", "ui"],
+    "category": "Scroll View",
+    "dependencies": {}
+}
