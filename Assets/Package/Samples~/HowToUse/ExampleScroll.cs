@@ -27,6 +27,9 @@ namespace example
             mVerticalDynamicScroll.spacing = 5f;
             mVerticalDynamicScroll.centralizeOnStop = true;
             mVerticalDynamicScroll.Initiate(verticalScroll, mData, 0, referenceObject);
+            
+            Debug.Log("Example Horizontal Data : " +  mHorizontalDynamicScroll.RawDataList.Count);
+            Debug.Log("Example Vertical Data : " +  mVerticalDynamicScroll.RawDataList.Count);
 		}
 
         public void Update()
