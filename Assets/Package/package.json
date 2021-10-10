@@ -1,0 +1,24 @@
+{
+  "name": "com.mukarillo.dynamicscrollrect",
+  "version": "1.0.0",
+  "displayName": "Unity Dynamic ScrollRect",
+  "description": "An optimized approach to lists with dozens of elements and a Pooling system",
+  "unity": "2019.2",
+  "license": "",
+  "dependencies": {
+  },
+  "keywords": [
+    "Scroll"
+  ],
+  "samples": [
+    {
+      "displayName": "How to use sample",
+      "description": "Showcase of how to use Dynamic ScrollRect",
+      "path": "Samples~/HowToUse"
+    }
+  ],
+  "author": {
+    "name": "Mukarillo",
+    "url": "https://github.com/Mukarillo"
+  }
+}

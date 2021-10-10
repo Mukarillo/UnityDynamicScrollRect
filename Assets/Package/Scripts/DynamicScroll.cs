@@ -53,7 +53,7 @@ namespace dynamicscroll
 		private Vector2 mClampedPosition = Vector2.zero;
 		private IList<T> infoList;
         private Tween forceMoveTween;
-
+        public IList<T> RawDataList => infoList;
 		public void Initiate(DynamicScrollRect scrollRect, IList<T> infoList, int startIndex, GameObject objReference, bool createMoreIfNeeded = true, int? forceAmount = null)
         {
             ScrollRect = scrollRect;
@@ -61,7 +61,10 @@ namespace dynamicscroll
                 throw new Exception("No scroll rect in gameObject.");
 
             if (objReference == null)
-                throw new Exception("No Reference GameObject setted.");
+                throw new Exception("No Reference GameObject has set.");
+            
+            if (startIndex >= infoList.Count)
+                throw new Exception("Invalid index: " + startIndex);
 
             this.infoList = infoList;
             
@@ -533,21 +536,24 @@ namespace dynamicscroll
             }
         }
 
-        public void MoveToIndex(int i, float? totalTime = null, float? timePerElement = null)
+        public void MoveToIndex(int index, float? totalTime = null, float? timePerElement = null)
         {
+            if(index >= infoList.Count)
+                throw new Exception("Invalid index to move: " + index);
+            
             if(!totalTime.HasValue && !timePerElement.HasValue)
                 throw new Exception("Either send totalTime or timePerElement to make MoveToIndex work.");
 
             var refObject = objectPool.GetAllWithState(true)[0];
-            i = Mathf.Clamp(i, 0, infoList.Count - 1);
+            index = Mathf.Clamp(index, 0, infoList.Count - 1);
             forceMoveTween?.Kill();
             ScrollRect.StopMovement();
             ScrollRect.needElasticReturn = false;
-            var amountToGo = Mathf.Abs(GetCentralizedObject().CurrentIndex - i);
+            var amountToGo = Mathf.Abs(GetCentralizedObject().CurrentIndex - index);
             var time = totalTime ?? timePerElement.Value * amountToGo;
 
-            var pos = mIsHorizontal ? - ((i * (refObject.CurrentWidth + spacing)) - (ScrollRect.viewport.rect.width / 2f) + (refObject.CurrentWidth / 2f))
-                : ((i * (refObject.CurrentHeight + spacing)) - (ScrollRect.viewport.rect.height / 2f) + (refObject.CurrentHeight / 2f));
+            var pos = mIsHorizontal ? - ((index * (refObject.CurrentWidth + spacing)) - (ScrollRect.viewport.rect.width / 2f) + (refObject.CurrentWidth / 2f))
+                : ((index * (refObject.CurrentHeight + spacing)) - (ScrollRect.viewport.rect.height / 2f) + (refObject.CurrentHeight / 2f));
             forceMoveTween = (mIsHorizontal ? ScrollRect.content.DOAnchorPosX(pos, time) : ScrollRect.content.DOAnchorPosY(pos, time)).SetEase(Ease.OutQuint);
         }
 
